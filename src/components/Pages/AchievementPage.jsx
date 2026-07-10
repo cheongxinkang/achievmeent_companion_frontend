@@ -1,111 +1,132 @@
 import React, { useState } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useAppData } from '../../context/AppDataContext';
+import { MILESTONE_STATUS, STATUS_FILTER } from '../../constants';
+import { getAchievementProgress } from '../../utils/achievements';
 import Card from '../Common/Card';
-import TextButton from '../Common/TextButton';
-import Modal from '../Common/Modal';
-import TextField from '../Common/TextField';
-import SubmitButton from '../Common/SubmitButton';
-import { Plus, Trash2, Award } from 'lucide-react';
+import AchievementCard from '../Achievements/AchievementCard';
+import CreateAchievementModal from '../Achievements/CreateAchievementModal';
+import MilestonesModal from '../Achievements/MilestonesModal';
+import AchievementSidebar from '../Achievements/AchievementSidebar';
+import { Award } from 'lucide-react';
 
 const AchievementPage = () => {
-  const { achievements, addNewAchievement, deleteAchievementItem } = useApp();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { achievements, updateAchievementItem, deleteAchievementItem } = useAppData();
+  
+  // Page Search & Filters
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState(STATUS_FILTER.ALL);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!title.trim()) return;
-    setIsSubmitting(true);
+  // Modals state
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+
+  // Toggle milestone status inside the modal
+  const handleToggleMilestone = async (project, milestoneId) => {
+    const updatedMilestones = project.milestones.map((m) => {
+      if (m.id === milestoneId) {
+        return { ...m, status: m.status === MILESTONE_STATUS.SUCCESS ? MILESTONE_STATUS.IDLE : MILESTONE_STATUS.SUCCESS };
+      }
+      return m;
+    });
+
     try {
-      await addNewAchievement({ title, description });
-      setTitle('');
-      setDescription('');
-      setIsModalOpen(false);
+      const updated = await updateAchievementItem(project.id, { milestones: updatedMilestones });
+      setSelectedProject(updated);
     } catch (err) {
-      console.error(err);
-    } finally {
-      setIsSubmitting(false);
+      console.error('Failed to update milestone status:', err);
     }
   };
 
+  const handleOpenMilestones = (project) => {
+    setSelectedProject(project);
+    setIsMilestoneModalOpen(true);
+  };
+
+  const handleDeleteProject = async (id) => {
+    await deleteAchievementItem(id);
+    setIsMilestoneModalOpen(false);
+    setSelectedProject(null);
+  };
+
+  // Filter logic
+  const filteredAchievements = achievements.filter((ach) => {
+    const matchesSearch =
+      ach.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (ach.description && ach.description.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const { isCompleted } = getAchievementProgress(ach);
+
+    let matchesStatus = true;
+    if (statusFilter === STATUS_FILTER.COMPLETED) {
+      matchesStatus = isCompleted;
+    } else if (statusFilter === STATUS_FILTER.ACTIVE) {
+      matchesStatus = !isCompleted;
+    }
+
+    return matchesSearch && matchesStatus;
+  });
+
+  // Calculate overall stats for sidebar
+  const totalProjects = achievements.length;
+  const completedProjects = achievements.filter((ach) => getAchievementProgress(ach).isCompleted).length;
+
   return (
     <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
-      <div className="page-header-row">
-        <h1 className="page-title">Achievements</h1>
-        <TextButton 
-          variant="primary" 
-          onClick={() => setIsModalOpen(true)}
-          icon={<Plus size={16} />}
-        >
-          New Achievement
-        </TextButton>
+      <div className="achievement-page-grid">
+        
+        {/* LEFT COLUMN: Main Achievements List */}
+        <section className="achievement-list-container">
+          <div className="page-header-row" style={{ marginBottom: '0.5rem' }}>
+            <h1 className="page-title">Achievements</h1>
+          </div>
+
+          {filteredAchievements.length === 0 ? (
+            <Card style={{ textAlign: 'center', padding: '4rem 2rem', color: 'var(--text-secondary)' }}>
+              <Award size={56} style={{ color: 'var(--color-primary)', margin: '0 auto 1.25rem', opacity: 0.8 }} />
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 600 }}>No achievements match your filters</h3>
+              <p style={{ fontSize: '0.9rem', marginTop: '0.5rem', color: 'var(--text-muted)' }}>
+                Try adjusting your search queries or create a brand new achievement project!
+              </p>
+            </Card>
+          ) : (
+            filteredAchievements.map((ach) => (
+              <AchievementCard
+                key={ach.id}
+                achievement={ach}
+                onOpenMilestones={handleOpenMilestones}
+                onToggleMilestone={handleToggleMilestone}
+              />
+            ))
+          )}
+        </section>
+
+        {/* RIGHT COLUMN: Sidebar controls */}
+        <AchievementSidebar
+          onCreateClick={() => setIsCreateModalOpen(true)}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          totalProjects={totalProjects}
+          completedProjects={completedProjects}
+        />
       </div>
 
-      {achievements.length === 0 ? (
-        <Card style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
-          <Award size={48} style={{ color: 'var(--color-primary)', margin: '0 auto 1rem', opacity: 0.7 }} />
-          <h3>No achievements yet</h3>
-          <p style={{ fontSize: '0.9rem', marginTop: '0.25rem' }}>Start recording your daily wins to build consistency!</p>
-        </Card>
-      ) : (
-        <div className="items-grid">
-          {achievements.map((ach) => (
-            <Card key={ach.id} style={{ borderLeft: '4px solid var(--color-success)' }}>
-              <div className="item-card-inner">
-                <h3 className="item-card-title">{ach.title}</h3>
-                <p className="item-card-desc">{ach.description || 'No description provided.'}</p>
-                <div className="item-card-footer">
-                  <span className="badge">{ach.date}</span>
-                  <TextButton 
-                    variant="danger" 
-                    onClick={() => deleteAchievementItem(ach.id)}
-                    icon={<Trash2 size={14} />}
-                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-                  >
-                    Delete
-                  </TextButton>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
+      {/* Creation Modal */}
+      <CreateAchievementModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
 
-      {/* Achievement Modal */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Create Achievement"
-      >
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <TextField
-            id="ach-page-title"
-            label="Achievement Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="What did you accomplish?"
-            required
-          />
-          <TextField
-            id="ach-page-desc"
-            label="Description"
-            type="textarea"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Add context or notes..."
-          />
-          <div className="modal-footer">
-            <TextButton onClick={() => setIsModalOpen(false)}>
-              Cancel
-            </TextButton>
-            <SubmitButton loading={isSubmitting}>
-              Add Achievement
-            </SubmitButton>
-          </div>
-        </form>
-      </Modal>
+      {/* Milestones Checklist Details Modal */}
+      <MilestonesModal
+        isOpen={isMilestoneModalOpen}
+        onClose={() => setIsMilestoneModalOpen(false)}
+        project={selectedProject}
+        onToggleMilestone={handleToggleMilestone}
+        onDeleteProject={handleDeleteProject}
+      />
     </div>
   );
 };

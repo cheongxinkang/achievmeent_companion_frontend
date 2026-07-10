@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import TextField from '../Common/TextField';
 import SubmitButton from '../Common/SubmitButton';
 
 const LoginForm = () => {
-  const { loginUser } = useApp();
+  const { loginUser } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');

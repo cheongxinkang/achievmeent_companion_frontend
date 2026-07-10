@@ -1,9 +1,9 @@
 import React from 'react';
 import { Bell, LogOut } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 
 const Header = () => {
-  const { user, logoutUser } = useApp();
+  const { user, logoutUser } = useAuth();
 
   const handleNotificationClick = () => {
     alert("Notification Companion: You have no new notifications! Keep up the good work.");

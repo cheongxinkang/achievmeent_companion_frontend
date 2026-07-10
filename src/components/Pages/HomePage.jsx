@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
+import { useAppData } from '../../context/AppDataContext';
+import { useTracker } from '../../context/TrackerContext';
+import { MILESTONE_STATUS } from '../../constants';
 import Card from '../Common/Card';
 import TextButton from '../Common/TextButton';
 import Modal from '../Common/Modal';
@@ -19,19 +22,21 @@ import {
 } from 'lucide-react';
 
 const HomePage = () => {
+  const { user } = useAuth();
   const {
-    user,
     timeline,
     changeTimelineSlotStatus,
     achievements,
     addNewAchievement,
     deleteAchievementItem,
     remarks,
-    saveRemarksText,
+    saveRemarksText
+  } = useAppData();
+  const {
     trackerSeconds,
     trackerRunning,
     setTrackerRunning
-  } = useApp();
+  } = useTracker();
 
   // Clock state
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -111,36 +116,22 @@ const HomePage = () => {
           </div>
           
           <div className="timeline-list">
-            {timeline.map((slot) => {
-              // Custom border styling based on timeline status
-              let statusBorder = 'var(--glass-border)';
-              if (slot.status === 'success') statusBorder = 'rgba(16, 185, 129, 0.4)';
-              if (slot.status === 'failed') statusBorder = 'rgba(239, 68, 68, 0.4)';
-              if (slot.status === 'active') statusBorder = 'rgba(99, 102, 241, 0.4)';
-
-              return (
-                <div key={slot.id} className="timeline-item">
-                  <span className="timeline-time">{slot.time}</span>
-                  <div className="timeline-slot" style={{ borderColor: statusBorder }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span className="timeline-slot-title">{slot.title}</span>
-                      {slot.status !== 'idle' && (
-                        <span 
-                          className="badge" 
-                          style={{
-                            background: slot.status === 'success' ? 'rgba(16, 185, 129, 0.1)' : slot.status === 'failed' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(99, 102, 241, 0.1)',
-                            color: slot.status === 'success' ? 'var(--color-success)' : slot.status === 'failed' ? 'var(--color-danger)' : 'var(--color-primary)',
-                            borderColor: slot.status === 'success' ? 'rgba(16, 185, 129, 0.2)' : slot.status === 'failed' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(99, 102, 241, 0.2)',
-                          }}
-                        >
-                          {slot.status}
-                        </span>
-                      )}
-                    </div>
+            {timeline.map((slot) => (
+              <div key={slot.id} className="timeline-item">
+                <span className="timeline-time">{slot.time}</span>
+                <div className="timeline-slot" data-status={slot.status}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span className="timeline-slot-title">{slot.title}</span>
+                    {slot.status !== MILESTONE_STATUS.IDLE && (
+                      <span className="badge" data-status={slot.status}>
+                        {slot.status}
+                      </span>
+                    )}
+                  </div>
                     
                     <div className="timeline-slot-actions">
                       <button 
-                        onClick={() => changeTimelineSlotStatus(slot.id, 'success')}
+                        onClick={() => changeTimelineSlotStatus(slot.id, MILESTONE_STATUS.SUCCESS)}
                         className="timeline-icon-btn success"
                         title="Mark Completed"
                         aria-label="Mark slot as completed"
@@ -148,7 +139,7 @@ const HomePage = () => {
                         <Check size={14} />
                       </button>
                       <button 
-                        onClick={() => changeTimelineSlotStatus(slot.id, 'failed')}
+                        onClick={() => changeTimelineSlotStatus(slot.id, MILESTONE_STATUS.FAILED)}
                         className="timeline-icon-btn danger"
                         title="Cancel Slot"
                         aria-label="Mark slot as failed"
@@ -156,7 +147,7 @@ const HomePage = () => {
                         <X size={14} />
                       </button>
                       <button 
-                        onClick={() => changeTimelineSlotStatus(slot.id, 'active')}
+                        onClick={() => changeTimelineSlotStatus(slot.id, MILESTONE_STATUS.ACTIVE)}
                         className="timeline-icon-btn"
                         style={{ color: 'var(--color-primary)' }}
                         title="Start Tracking"
@@ -165,7 +156,7 @@ const HomePage = () => {
                         <Play size={12} />
                       </button>
                       <button 
-                        onClick={() => changeTimelineSlotStatus(slot.id, 'idle')}
+                        onClick={() => changeTimelineSlotStatus(slot.id, MILESTONE_STATUS.IDLE)}
                         className="timeline-icon-btn"
                         title="Reset Slot"
                         aria-label="Reset slot status"
@@ -173,10 +164,9 @@ const HomePage = () => {
                         <Trash2 size={12} />
                       </button>
                     </div>
-                  </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </Card>
       </section>

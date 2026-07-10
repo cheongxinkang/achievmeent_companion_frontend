@@ -1,12 +1,14 @@
 import React from 'react';
-import { AppProvider, useApp } from './context/AppContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { AppDataProvider } from './context/AppDataContext';
+import { TrackerProvider } from './context/TrackerContext';
 import LoginPage from './components/Login/LoginPage';
 import Header from './components/Layout/Header';
 import NavSelector from './components/Layout/NavSelector';
 import ContentPage from './components/Pages/ContentPage';
 
 const AppContent = () => {
-  const { user, loading } = useApp();
+  const { user, loading } = useAuth();
 
   if (loading && !user) {
     return (
@@ -49,9 +51,13 @@ const AppContent = () => {
 
 function App() {
   return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
+    <AuthProvider>
+      <AppDataProvider>
+        <TrackerProvider>
+          <AppContent />
+        </TrackerProvider>
+      </AppDataProvider>
+    </AuthProvider>
   );
 }
 

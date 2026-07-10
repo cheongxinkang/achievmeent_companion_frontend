@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useAppData } from '../../context/AppDataContext';
 import Card from '../Common/Card';
 import TextButton from '../Common/TextButton';
 import Modal from '../Common/Modal';
@@ -8,7 +8,7 @@ import SubmitButton from '../Common/SubmitButton';
 import { Plus, LayoutGrid } from 'lucide-react';
 
 const TemplatePage = () => {
-  const { templates, addNewTemplate } = useApp();
+  const { templates, addNewTemplate } = useAppData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');

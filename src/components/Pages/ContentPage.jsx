@@ -1,18 +1,19 @@
 import React from 'react';
-import { useApp } from '../../context/AppContext';
+import { useAppData } from '../../context/AppDataContext';
+import { PAGES } from '../../constants';
 import HomePage from './HomePage';
 import AchievementPage from './AchievementPage';
 import TemplatePage from './TemplatePage';
 
 const ContentPage = () => {
-  const { activePage } = useApp();
+  const { activePage } = useAppData();
 
   switch (activePage) {
-    case 'Home':
+    case PAGES.HOME:
       return <HomePage />;
-    case 'Achievements':
+    case PAGES.ACHIEVEMENTS:
       return <AchievementPage />;
-    case 'Template':
+    case PAGES.TEMPLATE:
       return <TemplatePage />;
     default:
       return <HomePage />;

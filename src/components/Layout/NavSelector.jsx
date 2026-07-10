@@ -1,9 +1,10 @@
 import React from 'react';
-import { useApp } from '../../context/AppContext';
+import { useAppData } from '../../context/AppDataContext';
+import { PAGES } from '../../constants';
 
 const NavSelector = () => {
-  const { activePage, setActivePage } = useApp();
-  const tabs = ['Home', 'Achievements', 'Template'];
+  const { activePage, setActivePage } = useAppData();
+  const tabs = [PAGES.HOME, PAGES.ACHIEVEMENTS, PAGES.TEMPLATE];
 
   return (
     <nav className="nav-selector" aria-label="Main Navigation">
@@ -13,7 +14,7 @@ const NavSelector = () => {
           className={`nav-pill ${activePage === tab ? 'active' : ''}`}
           onClick={() => setActivePage(tab)}
         >
-          {tab === 'Template' ? 'Templates' : tab}
+          {tab === PAGES.TEMPLATE ? 'Templates' : tab}
         </button>
       ))}
     </nav>
