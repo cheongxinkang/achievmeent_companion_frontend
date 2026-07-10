@@ -1,17 +1,13 @@
-import React, { useState } from 'react';
 import Card from '../Common/Card';
 import { Trophy, Check } from 'lucide-react';
+import { useAppData } from '../../context/AppDataContext';
 
 const PossibleRewardsWidget = () => {
-  const [claimedRewards, setClaimedRewards] = useState(() => {
-    const saved = localStorage.getItem('ac_claimed_rewards_today');
-    return saved ? JSON.parse(saved) : {};
-  });
+  const { claimedRewards = {}, saveClaimedRewards } = useAppData();
 
   const handleClaimReward = (id) => {
     const newClaimed = { ...claimedRewards, [id]: !claimedRewards[id] };
-    setClaimedRewards(newClaimed);
-    localStorage.setItem('ac_claimed_rewards_today', JSON.stringify(newClaimed));
+    saveClaimedRewards(newClaimed);
   };
 
   const rewardsItems = [

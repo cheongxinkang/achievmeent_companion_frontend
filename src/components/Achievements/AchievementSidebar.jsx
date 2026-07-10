@@ -1,4 +1,3 @@
-import React from 'react';
 import Card from '../Common/Card';
 import { Plus, Search, Star } from 'lucide-react';
 import { STATUS_FILTER } from '../../constants';

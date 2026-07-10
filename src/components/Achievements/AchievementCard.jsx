@@ -1,4 +1,3 @@
-import React from 'react';
 import Card from '../Common/Card';
 import { Check } from 'lucide-react';
 import { MILESTONE_STATUS } from '../../constants';

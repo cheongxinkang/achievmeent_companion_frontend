@@ -1,4 +1,3 @@
-import React from 'react';
 import Card from '../Common/Card';
 import LoginForm from './LoginForm';
 

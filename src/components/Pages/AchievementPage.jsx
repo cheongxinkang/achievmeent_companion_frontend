@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAppData } from '../../context/AppDataContext';
 import { MILESTONE_STATUS, STATUS_FILTER } from '../../constants';
 import { getAchievementProgress } from '../../utils/achievements';

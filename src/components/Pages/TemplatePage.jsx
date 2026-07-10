@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAppData } from '../../context/AppDataContext';
 import Card from '../Common/Card';
 import TextButton from '../Common/TextButton';
@@ -14,11 +14,14 @@ const TemplatePage = () => {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Habit');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [usedTemplateId, setUsedTemplateId] = useState(null);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim()) return;
     setIsSubmitting(true);
+    setError('');
     try {
       await addNewTemplate({ title, description, category });
       setTitle('');
@@ -27,9 +30,17 @@ const TemplatePage = () => {
       setIsModalOpen(false);
     } catch (err) {
       console.error(err);
+      setError(err.message || 'Failed to create template. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleUseTemplate = (id) => {
+    setUsedTemplateId(id);
+    setTimeout(() => {
+      setUsedTemplateId(null);
+    }, 1500);
   };
 
   return (
@@ -63,11 +74,12 @@ const TemplatePage = () => {
                     {temp.category}
                   </span>
                   <TextButton 
-                    variant="primary" 
-                    onClick={() => alert(`Creating achievement from template: "${temp.title}"`)}
+                    variant={usedTemplateId === temp.id ? 'success' : 'primary'} 
+                    onClick={() => handleUseTemplate(temp.id)}
+                    disabled={usedTemplateId !== null}
                     style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
                   >
-                    Use Template
+                    {usedTemplateId === temp.id ? '✓ Created' : 'Use Template'}
                   </TextButton>
                 </div>
               </div>
@@ -109,6 +121,8 @@ const TemplatePage = () => {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="e.g. Put away laundry, sweep, vacuum, dust shelves"
           />
+
+          {error && <div className="text-field-error" style={{ textAlign: 'center', marginBottom: '0.5rem' }}>{error}</div>}
 
           <div className="modal-footer">
             <TextButton onClick={() => setIsModalOpen(false)}>

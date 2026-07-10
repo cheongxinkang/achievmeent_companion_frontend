@@ -6,7 +6,8 @@ const STORAGE_KEYS = {
   TEMPLATES: 'ac_templates',
   USER: 'ac_user',
   TIMELINE: 'ac_timeline',
-  REMARKS: 'ac_remarks'
+  REMARKS: 'ac_remarks',
+  CLAIMED_REWARDS: 'ac_claimed_rewards_today'
 };
 
 const defaultAchievements = [
@@ -213,5 +214,17 @@ export const mockApi = {
     await delay(300);
     saveToStorage(STORAGE_KEYS.REMARKS, remarks);
     return remarks;
+  },
+
+  // Claimed Rewards Today
+  getClaimedRewards: async () => {
+    await delay(200);
+    return getFromStorage(STORAGE_KEYS.CLAIMED_REWARDS, {});
+  },
+
+  setClaimedRewards: async (claimedRewards) => {
+    await delay(200);
+    saveToStorage(STORAGE_KEYS.CLAIMED_REWARDS, claimedRewards);
+    return claimedRewards;
   }
 };

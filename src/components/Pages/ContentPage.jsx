@@ -1,4 +1,3 @@
-import React from 'react';
 import { useAppData } from '../../context/AppDataContext';
 import { PAGES } from '../../constants';
 import HomePage from './HomePage';

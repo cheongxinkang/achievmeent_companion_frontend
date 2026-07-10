@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { mockApi } from '../api/mockApi';
 import { useAuth } from './AuthContext';
 import { PAGES } from '../constants';
@@ -12,21 +12,24 @@ export const AppDataProvider = ({ children }) => {
   const [templates, setTemplates] = useState([]);
   const [timeline, setTimeline] = useState([]);
   const [remarks, setRemarks] = useState('');
+  const [claimedRewards, setClaimedRewards] = useState({});
   const [loading, setLoading] = useState(false);
 
   const loadAllData = useCallback(async () => {
     setLoading(true);
     try {
-      const [achList, tempList, timelineList, remarksVal] = await Promise.all([
+      const [achList, tempList, timelineList, remarksVal, claimedVal] = await Promise.all([
         mockApi.getAchievements(),
         mockApi.getTemplates(),
         mockApi.getTimeline(),
-        mockApi.getRemarks()
+        mockApi.getRemarks(),
+        mockApi.getClaimedRewards()
       ]);
       setAchievements(achList);
       setTemplates(tempList);
       setTimeline(timelineList);
       setRemarks(remarksVal);
+      setClaimedRewards(claimedVal);
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
@@ -43,6 +46,7 @@ export const AppDataProvider = ({ children }) => {
       setTemplates([]);
       setTimeline([]);
       setRemarks('');
+      setClaimedRewards({});
       setActivePage(PAGES.HOME);
     }
   }, [user, loadAllData]);
@@ -116,6 +120,15 @@ export const AppDataProvider = ({ children }) => {
     }
   }, []);
 
+  const saveClaimedRewards = useCallback(async (newClaimed) => {
+    setClaimedRewards(newClaimed);
+    try {
+      await mockApi.setClaimedRewards(newClaimed);
+    } catch (err) {
+      console.error('Error saving claimed rewards:', err);
+    }
+  }, []);
+
   const contextValue = useMemo(() => ({
     activePage,
     setActivePage,
@@ -123,6 +136,7 @@ export const AppDataProvider = ({ children }) => {
     templates,
     timeline,
     remarks,
+    claimedRewards,
     loading, // internal data loading, just in case
     loadAllData,
     addNewAchievement,
@@ -130,13 +144,15 @@ export const AppDataProvider = ({ children }) => {
     updateAchievementItem,
     addNewTemplate,
     changeTimelineSlotStatus,
-    saveRemarksText
+    saveRemarksText,
+    saveClaimedRewards
   }), [
     activePage,
     achievements,
     templates,
     timeline,
     remarks,
+    claimedRewards,
     loading,
     loadAllData,
     addNewAchievement,
@@ -144,7 +160,8 @@ export const AppDataProvider = ({ children }) => {
     updateAchievementItem,
     addNewTemplate,
     changeTimelineSlotStatus,
-    saveRemarksText
+    saveRemarksText,
+    saveClaimedRewards
   ]);
 
   return (

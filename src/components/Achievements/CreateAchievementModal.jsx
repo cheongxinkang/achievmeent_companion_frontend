@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Modal from '../Common/Modal';
 import TextField from '../Common/TextField';
 import TextButton from '../Common/TextButton';
@@ -17,11 +17,13 @@ const CreateAchievementModal = ({ isOpen, onClose }) => {
   const [ticketsReward, setTicketsReward] = useState('20');
   const [milestonesText, setMilestonesText] = useState(DEFAULT_MILESTONES_TEXT);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim()) return;
     setIsSubmitting(true);
+    setError('');
 
     // Parse rewards
     const rewards = [];
@@ -72,6 +74,7 @@ const CreateAchievementModal = ({ isOpen, onClose }) => {
       onClose();
     } catch (err) {
       console.error(err);
+      setError(err.message || 'Failed to create achievement. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -138,6 +141,8 @@ const CreateAchievementModal = ({ isOpen, onClose }) => {
           onChange={(e) => setMilestonesText(e.target.value)}
           placeholder="e.g. First Draft&#10;Coding core mechanics&#10;Testing release"
         />
+
+        {error && <div className="text-field-error" style={{ textAlign: 'center', marginBottom: '0.5rem' }}>{error}</div>}
 
         <div className="modal-footer" style={{ marginTop: '0.5rem' }}>
           <TextButton type="button" onClick={onClose}>
